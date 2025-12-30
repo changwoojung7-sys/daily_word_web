@@ -6,6 +6,8 @@ function todayKey() {
   return d.toISOString().slice(0, 10);
 }
 
+const API_BASE = "https://saju500.onrender.com";
+
 async function loadDaily(force = false) {
   const cached = JSON.parse(localStorage.getItem("daily") || "null");
 
@@ -17,14 +19,8 @@ async function loadDaily(force = false) {
   dailyTextEl.textContent = "오늘의 문장을 불러오는 중…";
 
   try {
-      const res = await fetch(
-      "/api/dailyai",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      }
-      );
+    const res = await fetch(`${API_BASE}/api/daily`);
+
     if (!res.ok) {
       throw new Error(`API error ${res.status}`);
     }
