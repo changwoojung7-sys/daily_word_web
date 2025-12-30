@@ -18,15 +18,7 @@ async function loadDaily(force = false) {
   dailyTextEl.textContent = "오늘의 문장을 불러오는 중…";
 
   try {
-    const res = await fetch("/api/dailyai", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        action: "get_daily_word",
-      }),
-    });
+    const res = await fetch("/api/dailyai"); // GET, body 없음
 
     if (!res.ok) {
       throw new Error(`API error ${res.status}`);
