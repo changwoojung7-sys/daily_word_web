@@ -4,19 +4,13 @@ export async function onRequestGet() {
     { method: "GET" }
   );
 
-  if (!res.ok) {
-    return new Response(
-      JSON.stringify({ error: "backend error" }),
-      { status: 500 }
-    );
-  }
+  const text = await res.text();
 
-  const data = await res.text();
-
-  return new Response(data, {
+  return new Response(text, {
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*"
-    }
+      "Access-Control-Allow-Origin": "*",
+    },
   });
 }
+
