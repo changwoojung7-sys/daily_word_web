@@ -1,21 +1,13 @@
-/* ===============================
-   Elements
-=============================== */
 const dailyTextEl = document.getElementById("dailyText");
 const refreshBtn = document.getElementById("refreshBtn");
 
-/* ===============================
-   Utils
-=============================== */
 function todayKey() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return d.toISOString().slice(0, 10);
 }
 
-/* ===============================
-   Load Daily Sentence
-=============================== */
 async function loadDaily(force = false) {
-  const cached = JSON.parse(localStorage.getItem("calamus_daily") || "null");
+  const cached = JSON.parse(localStorage.getItem("daily") || "null");
 
   if (!force && cached && cached.date === todayKey()) {
     dailyTextEl.textContent = cached.text;
@@ -25,7 +17,13 @@ async function loadDaily(force = false) {
   dailyTextEl.textContent = "오늘의 문장을 불러오는 중…";
 
   try {
-    const res = await fetch("/api/daily_ai");
+    // 로컬 / Cloudflare 자동 분기
+    const API_BASE =
+      location.hostname === "localhost"
+        ? "https://saju500.onrender.com"
+        : "";
+
+    const res = await fetch(`${API_BASE}/api/daily`);
 
     if (!res.ok) {
       throw new Error(`API error ${res.status}`);
@@ -38,10 +36,10 @@ async function loadDaily(force = false) {
     }
 
     localStorage.setItem(
-      "calamus_daily",
+      "daily",
       JSON.stringify({
         date: todayKey(),
-        text: data.result
+        text: data.result,
       })
     );
 
@@ -54,16 +52,6 @@ async function loadDaily(force = false) {
   }
 }
 
-/* ===============================
-   Events
-=============================== */
-refreshBtn?.addEventListener("click", () => {
-  loadDaily(true);
-});
-
-/* ===============================
-   Init
-=============================== */
-document.addEventListener("DOMContentLoaded", () => {
-  loadDaily();
-});
+// 이벤트
+refreshBtn.addEventListener("click", () => loadDaily(true));
+document.addEventListener("DOMContentLoaded", () => loadDaily());

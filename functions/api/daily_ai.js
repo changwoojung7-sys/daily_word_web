@@ -11,7 +11,7 @@ export async function onRequest(context) {
     });
   }
 
-  if (request.method !== "GET") {
+  if (request.method !== "POST") {
     return new Response("Method Not Allowed", {
       status: 405,
       headers: buildCorsHeaders(request),
@@ -19,16 +19,34 @@ export async function onRequest(context) {
   }
 
   /* ===============================
+     Body Parsing
+  =============================== */
+  let payload;
+  try {
+    payload = await request.json();
+  } catch (err) {
+    return jsonResponse(
+      { error: "Invalid JSON body" },
+      400,
+      request
+    );
+  }
+
+  /* ===============================
      Render Flask API 호출
   =============================== */
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60_000);
+    const timeoutId = setTimeout(() => controller.abort(), 120_000); // ⭐ 2분 타임아웃
 
     const res = await fetch(
       "https://saju500.onrender.com/api/daily",
       {
-        method: "GET",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
         signal: controller.signal,
       }
     );
@@ -48,13 +66,25 @@ export async function onRequest(context) {
       );
     }
 
+    // 🔥 응답 포맷 방어
     let data;
     try {
       data = await res.json();
     } catch {
       const raw = await res.text();
       return jsonResponse(
-        { error: "Invalid JSON from Render", raw },
+        {
+          error: "Invalid JSON from Render",
+          raw,
+        },
+        502,
+        request
+      );
+    }
+
+    if (!data || typeof data !== "object") {
+      return jsonResponse(
+        { error: "Empty response from Render" },
         502,
         request
       );
@@ -62,7 +92,7 @@ export async function onRequest(context) {
 
     return jsonResponse(
       {
-        result: data.result ?? "",
+        result: data.result ?? data.data ?? data.message ?? "",
       },
       200,
       request
@@ -94,7 +124,7 @@ function buildCorsHeaders(request) {
   return {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Content-Type": "application/json",
   };
 }
