@@ -16,7 +16,8 @@ async function loadDaily(force = false) {
   dailyTextEl.textContent = "오늘의 문장을 불러오는 중…";
 
   try {
-    const res = await fetch("/api/dailyai"); // Cloudflare Function
+    // ❗ POST ❌ → GET ⭕
+    const res = await fetch("/api/dailyai");
 
     if (!res.ok) {
       throw new Error(`API error ${res.status}`);
