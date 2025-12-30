@@ -16,7 +16,7 @@ async function loadDaily(force = false) {
   dailyTextEl.textContent = "오늘의 문장을 불러오는 중…";
 
   try {
-    // ❗ POST ❌ → GET ⭕
+    // 🔑 GET ONLY
     const res = await fetch("/api/dailyai");
 
     if (!res.ok) {
@@ -25,7 +25,7 @@ async function loadDaily(force = false) {
 
     const data = await res.json();
 
-    if (!data.result || !data.result.trim()) {
+    if (!data.result) {
       throw new Error("Invalid API response");
     }
 
