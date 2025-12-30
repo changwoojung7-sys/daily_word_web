@@ -2,10 +2,8 @@ const dailyTextEl = document.getElementById("dailyText");
 const refreshBtn = document.getElementById("refreshBtn");
 
 function todayKey() {
-  const d = new Date();
-  return d.toISOString().slice(0, 10);
+  return new Date().toISOString().slice(0, 10);
 }
-
 
 async function loadDaily(force = false) {
   const cached = JSON.parse(localStorage.getItem("daily") || "null");
@@ -18,7 +16,7 @@ async function loadDaily(force = false) {
   dailyTextEl.textContent = "오늘의 문장을 불러오는 중…";
 
   try {
-    const res = await fetch("/api/dailyai"); // GET, body 없음
+    const res = await fetch("/api/dailyai"); // Cloudflare Function
 
     if (!res.ok) {
       throw new Error(`API error ${res.status}`);
@@ -26,7 +24,7 @@ async function loadDaily(force = false) {
 
     const data = await res.json();
 
-    if (!data.result) {
+    if (!data.result || !data.result.trim()) {
       throw new Error("Invalid API response");
     }
 
@@ -39,7 +37,6 @@ async function loadDaily(force = false) {
     );
 
     dailyTextEl.textContent = data.result;
-
   } catch (err) {
     console.error(err);
     dailyTextEl.textContent =
@@ -47,6 +44,5 @@ async function loadDaily(force = false) {
   }
 }
 
-// 이벤트
 refreshBtn.addEventListener("click", () => loadDaily(true));
 document.addEventListener("DOMContentLoaded", () => loadDaily());
