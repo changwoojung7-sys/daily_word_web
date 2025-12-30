@@ -17,14 +17,14 @@ async function loadDaily(force = false) {
   dailyTextEl.textContent = "오늘의 문장을 불러오는 중…";
 
   try {
-    // 로컬 / Cloudflare 자동 분기
-    const API_BASE =
-      location.hostname === "localhost"
-        ? "https://saju500.onrender.com"
-        : "";
-
-    const res = await fetch(`${API_BASE}/api/daily`);
-
+      const res = await fetch(
+      "/api/dailyai",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      }
+      );
     if (!res.ok) {
       throw new Error(`API error ${res.status}`);
     }
