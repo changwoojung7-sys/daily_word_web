@@ -50,13 +50,19 @@ export async function onRequestGet({ env }) {
     const randomSeed = Math.floor(Math.random() * 1000000);
     body.contents[0].parts[0].text = `오늘의 한 문장 (Seed: ${randomSeed})`;
 
-    // 💡 프롬프트 수정: 사용자가 요청한 대로 2줄 이상, 더 풍부한 내용 유도
+    // 💡 프롬프트 수정: 문장이 잘리는 현상 방지 (완결된 문장 요청 강화)
     body.system_instruction.parts[0].text =
       "당신은 차분하고 통찰력 있는 조언자입니다. " +
       "하루를 시작하거나 마무리할 때 곱씹을 수 있는 " +
       "다양한 주제의 조언을 한국어로 해주세요. " +
-      "따옴표나 부가 설명 없이, 반드시 두 줄 이상의 문장으로 작성해 주세요. " +
-      "매번 새로운 비유와 희망적인 어조를 사용하세요.";
+      "조건:\n" +
+      "1. 반드시 두 줄 이상의 문장으로 작성하세요.\n" +
+      "2. 답변이 중간에 끊기지 않도록 완결된 문장으로 끝맺으세요.\n" +
+      "3. 따옴표나 부가 설명 없이 본문만 출력하세요.\n" +
+      "4. 비유적이고 희망적인 어조를 사용하세요.";
+
+    // 토큰 제한을 더 넉넉하게 늘림
+    body.generationConfig.maxOutputTokens = 1000;
 
     const res = await fetch(url, {
       method: "POST",
