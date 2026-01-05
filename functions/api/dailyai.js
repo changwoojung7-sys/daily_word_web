@@ -26,7 +26,7 @@ export async function onRequestGet({ env }) {
     ],
     generationConfig: {
       temperature: 0.7,
-      maxOutputTokens: 120
+      maxOutputTokens: 500
     }
   };
 
