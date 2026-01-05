@@ -31,21 +31,22 @@ export async function onRequestGet({ env }) {
   };
 
   try {
-    // Provider Keys를 사용하므로 별도의 API 키 헤더가 필요 없을 수 있습니다.
-    // 만약 Cloudflare Gateway 설정에 따라 인증이 필요하다면 env.GEMINI_API_KEY 등을 사용해야 합니다.
-    // 현재는 Provider Keys 설정이 되어있다고 가정하고 키 전송을 생략하거나, 
-    // 기존 패턴대로 env에 키가 있다면 헤더에 추가하는 방식을 사용할 수 있습니다.
-    // 여기서는 Provider Keys 활용을 위해 x-goog-api-key 헤더를 생략합니다.
+    // ✅ Explicitly inject key to resolve "unregistered caller" (403)
+    // Cloudflare Provider Keys sometimes fail to inject if not configured as "Universal" or due to specific model paths.
+    // We fallback to manual injection if the strict Provider Key mode fails.
+    const apiKey = env.GOOGLE_AI_KEY || env.GEMINI_API_KEY;
 
-    // *주의*: 만약 Gateway가 Provider Key를 자동으로 주입하지 않는 설정이라면,
-    // headers: { "x-goog-api-key": env.GEMINI_API_KEY, ... } 가 필요할 수 있습니다.
-    // 사용자의 요청("구글 방식", "키가 등록되어있어")에 따라 Gateway가 처리하도록 합니다.
+    const headers = {
+      "Content-Type": "application/json"
+    };
+
+    if (apiKey) {
+      headers["x-goog-api-key"] = apiKey;
+    }
 
     const res = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: headers,
       body: JSON.stringify(body)
     });
 
